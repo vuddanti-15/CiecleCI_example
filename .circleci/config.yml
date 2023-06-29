@@ -26,11 +26,14 @@ jobs:
           name: Build and Test
           command: ./gradlew clean test
 
-          orbs:
-  android: circleci/android@2.3.0
+orbs:
+  android: circleci/android@x.y.z
 
-workflows:
-    example-workflow:
-      jobs:
-        - android/build:
-            executor: abhinav 
+
+jobs:
+  build:
+    executor: android/default
+    steps:
+      - checkout
+      - android/build
+      # additional build steps...
