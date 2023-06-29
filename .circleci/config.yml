@@ -1,26 +1,33 @@
 version: 2.1
 executors:
-  my-custom-executor:
+  android-executor:
     docker:
-      - image: cimg/base:stable
-        auth:
-          # ensure you have first added these secrets
-          # visit app.circleci.com/settings/project/github/vuddanti-15/CiecleCI_example/environment-variables
-          username: $DOCKER_HUB_USER
-          password: $DOCKER_HUB_PASSWORD
-jobs:
-  my-job-name:
+      - image: circleci/android:api-31
 
-    executor: my-custom-executor
+jobs:
+  build:
+    executor: android-executor
     steps:
       - checkout
-      - run: |
-          # echo Hello, World!
 
-orbs:
-  android: circleci/android@2.3.0
+      # Download and install dependencies
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum "app/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum "app/build.gradle" }}
+          paths:
+            - ~/.gradle
+
+      # Build and test the project
+      - run:
+          name: Build and Test
+          command: ./gradlew clean test
 
 workflows:
-  my-custom-workflow:
+  version: 2
+  build:
     jobs:
-      - my-job-name
+      - build
